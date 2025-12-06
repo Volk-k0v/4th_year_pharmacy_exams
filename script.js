@@ -2866,7 +2866,8 @@ function downloadPDF() {
     
     // Store button state if you have one
     const downloadBtn = document.querySelector('button[onclick*="downloadPDF"]') || 
-                       document.getElementById('downloadBtn');
+                       document.getElementById('downloadBtn') ||
+                       document.querySelector('.download-pdf-btn');
     let originalText = '';
     if (downloadBtn) {
         originalText = downloadBtn.innerHTML;
@@ -2878,15 +2879,132 @@ function downloadPDF() {
         const { jsPDF } = window.jspdf;
         const doc = new jsPDF();
         
-        // ... [Keep all your existing PDF creation code] ...
-        
+        // === START OF YOUR PDF CREATION CODE ===
         // إعدادات النص
         const marginLeft = 20;
-        const pageWidth = 170;
-        const lineHeight = 6;
-        const questionMargin = 10;
+        const pageWidth = 170; // عرض الصفحة المستخدم
+        const lineHeight = 6; // ارتفاع السطر
+        const questionMargin = 10; // مسافة بين الأسئلة
         
-        // ... [Keep all your existing content generation code] ...
+        // ترويسة
+        doc.setFontSize(20);
+        doc.setFont("helvetica", "bold");
+        doc.text("Corrigé de l'Examen", 105, 20, null, null, 'center');
+        
+        doc.setFontSize(12);
+        doc.setFont("helvetica", "bold");
+        doc.text("Examen:", marginLeft, 35);
+        doc.setFont("helvetica", "normal");
+        doc.text(examInfo.title, marginLeft + 30, 35);
+        
+        doc.setFont("helvetica", "bold");
+        doc.text("Matière:", marginLeft, 42);
+        doc.setFont("helvetica", "normal");
+        doc.text(subjectNames[examInfo.subject] || examInfo.subject, marginLeft + 30, 42);
+        
+        doc.setFont("helvetica", "bold");
+        doc.text("Date:", marginLeft, 49);
+        doc.setFont("helvetica", "normal");
+        doc.text(new Date().toLocaleDateString('fr-FR'), marginLeft + 30, 49);
+        
+        // خط فاصل
+        doc.setDrawColor(0, 0, 0);
+        doc.setLineWidth(0.5);
+        doc.line(marginLeft, 55, marginLeft + pageWidth, 55);
+        
+        let yPosition = 65;
+        let pageNumber = 1;
+        
+        // دالة مساعدة لتقسيم النص
+        function addWrappedText(text, x, y, maxWidth) {
+            const lines = doc.splitTextToSize(text, maxWidth);
+            doc.text(lines, x, y);
+            return lines.length * lineHeight;
+        }
+        
+        // دالة مساعدة لإضافة سؤال مع تقسيم النص
+        function addQuestionWithWrapping(question, index) {
+            let currentY = yPosition;
+            
+            // رقم السؤال
+            doc.setFontSize(13);
+            doc.setFont("helvetica", "bold");
+            doc.text(`Q${index + 1}.`, marginLeft, currentY);
+            
+            // نص السؤال مع تقسيم إلى أسطر
+            const questionText = question.text || `Question ${index + 1}`;
+            doc.setFont("helvetica", "normal");
+            const questionHeight = addWrappedText(questionText, marginLeft + 10, currentY, pageWidth - 10);
+            currentY += questionHeight + 4;
+            
+            // الإجابات الصحيحة مع تقسيم النص
+            const correctAnswers = question.correct || [];
+            
+            if (correctAnswers.length > 0 && question.options) {
+                // ترتيب الإجابات
+                const sortedAnswers = [...correctAnswers].sort((a, b) => a - b);
+                
+                sortedAnswers.forEach(correctIndex => {
+                    if (correctIndex < question.options.length) {
+                        const letter = String.fromCharCode(65 + correctIndex);
+                        const answerText = question.options[correctIndex];
+                        
+                        // تنسيق الإجابة: "A) نص الإجابة"
+                        const fullAnswerText = `${letter}) ${answerText}`;
+                        
+                        // تقسيم الإجابة إذا كانت طويلة
+                        const answerHeight = addWrappedText(fullAnswerText, marginLeft + 15, currentY, pageWidth - 15);
+                        currentY += answerHeight + 2;
+                    }
+                });
+            } else if (question.correctAnswer && question.correctAnswer.length > 0) {
+                // إذا كانت الإجابات مخزنة كنصوص
+                question.correctAnswer.forEach((answer, answerIndex) => {
+                    const letter = String.fromCharCode(65 + answerIndex);
+                    const fullAnswerText = `${letter}) ${answer}`;
+                    const answerHeight = addWrappedText(fullAnswerText, marginLeft + 15, currentY, pageWidth - 15);
+                    currentY += answerHeight + 2;
+                });
+            } else {
+                doc.setFont("helvetica", "italic");
+                doc.setTextColor(100, 100, 100);
+                doc.text("Pas de réponse correcte définie", marginLeft + 15, currentY);
+                doc.setTextColor(0, 0, 0);
+                currentY += lineHeight;
+            }
+            
+            // إضافة خط فاصل
+            currentY += 3;
+            doc.setDrawColor(200, 200, 200);
+            doc.setLineWidth(0.3);
+            doc.line(marginLeft, currentY, marginLeft + pageWidth, currentY);
+            
+            return currentY + questionMargin - yPosition; // إرجاع الارتفاع المستخدم
+        }
+        
+        // معالجة كل سؤال
+        currentExam.questions.forEach((question, index) => {
+            // التحقق من المساحة قبل إضافة السؤال
+            const estimatedHeight = 50; // تقدير تقريبي للارتفاع
+            if (yPosition + estimatedHeight > 280) {
+                doc.addPage();
+                yPosition = 20;
+                pageNumber++;
+                
+                // ترويسة الصفحة الجديدة
+                doc.setFontSize(12);
+                doc.setFont("helvetica", "bold");
+                doc.text(`Corrigé - Page ${pageNumber}`, 105, 30, null, null, 'center');
+                doc.setDrawColor(0, 0, 0);
+                doc.setLineWidth(0.5);
+                doc.line(marginLeft, 35, marginLeft + pageWidth, 35);
+                yPosition = 40;
+            }
+            
+            // إضافة السؤال مع تقسيم النص
+            const questionHeight = addQuestionWithWrapping(question, index);
+            yPosition += questionHeight;
+        });
         
         // تذييل الصفحة
         doc.setFontSize(10);
@@ -2894,6 +3012,7 @@ function downloadPDF() {
         doc.setFont("helvetica", "italic");
         doc.text(`Corrigé complet - ${examInfo.totalQuestions} questions - Page ${pageNumber}`, 
                  105, 285, null, null, 'center');
+        // === END OF YOUR PDF CREATION CODE ===
         
         // === MOBILE-COMPATIBLE DOWNLOAD ===
         const fileName = `corrige-complet-${examInfo.title.replace(/[^a-z0-9]/gi, '-').toLowerCase()}.pdf`;
@@ -2910,10 +3029,12 @@ function downloadPDF() {
             doc.save(fileName);
         }
         
-        // Show success message
+        // Show success message after a short delay
         setTimeout(() => {
-            alert('PDF généré avec succès!');
-        }, 500);
+            if (!isMobile || !isIOS) {
+                alert('PDF généré avec succès!');
+            }
+        }, 1000);
         
     } catch (error) {
         console.error('Erreur lors de la génération du PDF:', error);
@@ -2921,8 +3042,10 @@ function downloadPDF() {
     } finally {
         // Restore button state
         if (downloadBtn) {
-            downloadBtn.innerHTML = originalText;
-            downloadBtn.disabled = false;
+            setTimeout(() => {
+                downloadBtn.innerHTML = originalText;
+                downloadBtn.disabled = false;
+            }, 1000);
         }
     }
 }
@@ -2944,10 +3067,17 @@ function downloadForMobile(doc, fileName, isIOS) {
     
     if (isIOS) {
         // iOS needs special handling
-        handleIOSDownload(blobUrl, fileName);
+        handleIOSDownload(blobUrl, fileName, link);
     } else {
         // Android and other mobile browsers
-        link.click();
+        setTimeout(() => {
+            link.click();
+            
+            // Show Android success message
+            setTimeout(() => {
+                alert('PDF généré! Vérifiez votre dossier Téléchargements.');
+            }, 500);
+        }, 100);
     }
     
     // Clean up after a delay
@@ -2956,26 +3086,28 @@ function downloadForMobile(doc, fileName, isIOS) {
             document.body.removeChild(link);
         }
         URL.revokeObjectURL(blobUrl);
-    }, 1000);
+    }, 5000);
 }
 
 // === iOS SPECIFIC HANDLING ===
-function handleIOSDownload(blobUrl, fileName) {
-    // For iOS, we need to open in new tab and guide user
-    const newTab = window.open(blobUrl, '_blank');
+function handleIOSDownload(blobUrl, fileName, link) {
+    // Try multiple methods for iOS
     
-    // Show iOS instructions
+    // Method 1: Try to click the link first
     setTimeout(() => {
-        if (newTab && !newTab.closed) {
-            // Tab opened successfully
-            showIOSInstructions();
-        } else {
-            // Tab blocked or failed, try alternative
-            const link = document.createElement('a');
-            link.href = blobUrl;
-            link.target = '_blank';
-            link.click();
-            showIOSInstructions();
+        link.click();
+    }, 100);
+    
+    // Method 2: If that doesn't work, open in new tab
+    setTimeout(() => {
+        // Check if download started by checking if link is still in DOM
+        if (document.body.contains(link)) {
+            const newTab = window.open(blobUrl, '_blank');
+            
+            // Show iOS instructions
+            setTimeout(() => {
+                showIOSInstructions();
+            }, 1000);
         }
     }, 500);
 }
@@ -3040,24 +3172,150 @@ function showIOSInstructions() {
     }
 }
 
-// === ALTERNATIVE: SIMPLER MOBILE FIX ===
-// If you want a simpler version, use this alternative download function:
-function mobileDownloadPDF() {
-    // ... [your PDF generation code] ...
+// === UNIVERSAL MOBILE DOWNLOAD FALLBACK ===
+function forceMobileDownload(doc, fileName) {
+    // Try multiple methods for mobile download
     
-    // After generating PDF:
+    // Method 1: Blob + anchor click
+    try {
+        const blob = doc.output('blob');
+        const url = URL.createObjectURL(blob);
+        const link = document.createElement('a');
+        link.href = url;
+        link.download = fileName;
+        link.style.display = 'none';
+        document.body.appendChild(link);
+        
+        // Create a proper click event
+        const clickEvent = new MouseEvent('click', {
+            view: window,
+            bubbles: true,
+            cancelable: false
+        });
+        
+        link.dispatchEvent(clickEvent);
+        
+        // Clean up
+        setTimeout(() => {
+            document.body.removeChild(link);
+            URL.revokeObjectURL(url);
+        }, 1000);
+        
+        return true;
+    } catch (e) {
+        console.log('Method 1 failed:', e);
+    }
+    
+    // Method 2: Data URI
+    try {
+        const dataUri = doc.output('datauristring');
+        const link = document.createElement('a');
+        link.href = dataUri;
+        link.download = fileName;
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        return true;
+    } catch (e) {
+        console.log('Method 2 failed:', e);
+    }
+    
+    // Method 3: Open in new window
+    try {
+        const dataUri = doc.output('datauristring');
+        window.open(dataUri, '_blank');
+        return true;
+    } catch (e) {
+        console.log('Method 3 failed:', e);
+    }
+    
+    return false;
+}
+
+// === ADD TOUCH EVENT LISTENER FOR MOBILE ===
+document.addEventListener('DOMContentLoaded', function() {
+    const pdfButtons = document.querySelectorAll('button[onclick*="downloadPDF"], #downloadBtn, .download-pdf-btn');
+    
+    pdfButtons.forEach(button => {
+        // Add touch event for mobile
+        button.addEventListener('touchend', function(e) {
+            e.preventDefault();
+            downloadPDF();
+        });
+        
+        // Add touch feedback styles
+        button.style.cssText += `
+            min-height: 44px;
+            min-width: 44px;
+            touch-action: manipulation;
+            -webkit-tap-highlight-color: transparent;
+        `;
+    });
+    
+    // Add CSS for mobile optimization
+    const style = document.createElement('style');
+    style.textContent = `
+        @media (max-width: 768px) {
+            button[onclick*="downloadPDF"], 
+            #downloadBtn, 
+            .download-pdf-btn {
+                padding: 18px 30px !important;
+                font-size: 18px !important;
+                width: 100% !important;
+                margin: 20px 0 !important;
+            }
+        }
+        
+        /* Loading animation */
+        .pdf-loading {
+            position: relative;
+            color: transparent !important;
+        }
+        .pdf-loading::after {
+            content: '';
+            position: absolute;
+            width: 20px;
+            height: 20px;
+            top: 50%;
+            left: 50%;
+            margin: -10px 0 0 -10px;
+            border: 2px solid #fff;
+            border-radius: 50%;
+            border-top-color: transparent;
+            animation: spin 1s linear infinite;
+        }
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+    `;
+    document.head.appendChild(style);
+});
+
+// === ALTERNATIVE FUNCTION FOR DIRECT USE ===
+function downloadPDFMobileOptimized() {
+    // This is an alternative that uses the universal fallback
+    if (!window.jspdf) {
+        alert('La bibliothèque PDF n\'est pas chargée.');
+        return;
+    }
+    
+    const { jsPDF } = window.jspdf;
+    const doc = new jsPDF();
+    
+    // ... [Insert your PDF creation code here] ...
+    
     const fileName = `corrige-complet-${examInfo.title.replace(/[^a-z0-9]/gi, '-').toLowerCase()}.pdf`;
     
-    // Mobile-compatible download
-    const pdfOutput = doc.output('datauristring');
-    const link = document.createElement('a');
-    link.href = pdfOutput;
-    link.download = fileName;
+    // Try mobile-optimized download
+    const success = forceMobileDownload(doc, fileName);
     
-    // For iOS, we need to add to document first
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
+    if (success) {
+        setTimeout(() => {
+            alert('PDF généré avec succès!');
+        }, 1000);
+    } else {
+        alert('Impossible de télécharger le PDF. Essayez avec un navigateur différent (Chrome, Safari).');
+    }
 }
 
 // =============================================
@@ -3088,3 +3346,4 @@ window.previousQuestion = previousQuestion;
 window.nextQuestion = nextQuestion;
 
 window.downloadPDF = downloadPDF;
+
