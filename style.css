@@ -67,7 +67,7 @@ nav ul li a:hover {
 
 /* Hero Section */
 .hero {
-    background: linear-gradient(rgba(26, 115, 232, 0.7), rgba(13, 71, 161, 0.7)), url('images/camero.jpg');
+    background: linear-gradient(rgba(26, 115, 232, 0.7), rgba(13, 71, 161, 0.7)), url('camero.jpg');
     background-size: cover;
     background-position: center;
     height: 70vh;
@@ -640,4 +640,5 @@ footer {
     .exam-type-buttons, .term-buttons {
         grid-template-columns: 1fr;
     }
+
 }
