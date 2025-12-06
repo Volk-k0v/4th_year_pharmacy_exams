@@ -2864,145 +2864,200 @@ function downloadPDF() {
         return;
     }
     
-    const { jsPDF } = window.jspdf;
-    const doc = new jsPDF();
-    
-    // إعدادات النص
-    const marginLeft = 20;
-    const pageWidth = 170; // عرض الصفحة المستخدم
-    const lineHeight = 6; // ارتفاع السطر
-    const questionMargin = 10; // مسافة بين الأسئلة
-    
-    // ترويسة
-    doc.setFontSize(20);
-    doc.setFont("helvetica", "bold");
-    doc.text("Corrigé de l'Examen", 105, 20, null, null, 'center');
-    
-    doc.setFontSize(12);
-    doc.setFont("helvetica", "bold");
-    doc.text("Examen:", marginLeft, 35);
-    doc.setFont("helvetica", "normal");
-    doc.text(examInfo.title, marginLeft + 30, 35);
-    
-    doc.setFont("helvetica", "bold");
-    doc.text("Matière:", marginLeft, 42);
-    doc.setFont("helvetica", "normal");
-    doc.text(subjectNames[examInfo.subject] || examInfo.subject, marginLeft + 30, 42);
-    
-    doc.setFont("helvetica", "bold");
-    doc.text("Date:", marginLeft, 49);
-    doc.setFont("helvetica", "normal");
-    doc.text(new Date().toLocaleDateString('fr-FR'), marginLeft + 30, 49);
-    
-    // خط فاصل
-    doc.setDrawColor(0, 0, 0);
-    doc.setLineWidth(0.5);
-    doc.line(marginLeft, 55, marginLeft + pageWidth, 55);
-    
-    let yPosition = 65;
-    let pageNumber = 1;
-    
-    // دالة مساعدة لتقسيم النص
-    function addWrappedText(text, x, y, maxWidth) {
-        const lines = doc.splitTextToSize(text, maxWidth);
-        doc.text(lines, x, y);
-        return lines.length * lineHeight;
+    // Store button state if you have one
+    const downloadBtn = document.querySelector('button[onclick*="downloadPDF"]') || 
+                       document.getElementById('downloadBtn');
+    let originalText = '';
+    if (downloadBtn) {
+        originalText = downloadBtn.innerHTML;
+        downloadBtn.innerHTML = '⏳ Génération du PDF...';
+        downloadBtn.disabled = true;
     }
     
-    // دالة مساعدة لإضافة سؤال مع تقسيم النص
-    function addQuestionWithWrapping(question, index) {
-        let currentY = yPosition;
+    try {
+        const { jsPDF } = window.jspdf;
+        const doc = new jsPDF();
         
-        // رقم السؤال
-        doc.setFontSize(13);
-        doc.setFont("helvetica", "bold");
-        doc.text(`Q${index + 1}.`, marginLeft, currentY);
+        // ... [Keep all your existing PDF creation code] ...
         
-        // نص السؤال مع تقسيم إلى أسطر
-        const questionText = question.text || `Question ${index + 1}`;
-        doc.setFont("helvetica", "normal");
-        const questionHeight = addWrappedText(questionText, marginLeft + 10, currentY, pageWidth - 10);
-        currentY += questionHeight + 4;
+        // إعدادات النص
+        const marginLeft = 20;
+        const pageWidth = 170;
+        const lineHeight = 6;
+        const questionMargin = 10;
         
-        // الإجابات الصحيحة مع تقسيم النص
-        const correctAnswers = question.correct || [];
+        // ... [Keep all your existing content generation code] ...
         
-        if (correctAnswers.length > 0 && question.options) {
-            // ترتيب الإجابات
-            const sortedAnswers = [...correctAnswers].sort((a, b) => a - b);
-            
-            sortedAnswers.forEach(correctIndex => {
-                if (correctIndex < question.options.length) {
-                    const letter = String.fromCharCode(65 + correctIndex);
-                    const answerText = question.options[correctIndex];
-                    
-                    // تنسيق الإجابة: "A) نص الإجابة"
-                    const fullAnswerText = `${letter}) ${answerText}`;
-                    
-                    // تقسيم الإجابة إذا كانت طويلة
-                    const answerHeight = addWrappedText(fullAnswerText, marginLeft + 15, currentY, pageWidth - 15);
-                    currentY += answerHeight + 2;
-                }
-            });
-        } else if (question.correctAnswer && question.correctAnswer.length > 0) {
-            // إذا كانت الإجابات مخزنة كنصوص
-            question.correctAnswer.forEach((answer, answerIndex) => {
-                const letter = String.fromCharCode(65 + answerIndex);
-                const fullAnswerText = `${letter}) ${answer}`;
-                const answerHeight = addWrappedText(fullAnswerText, marginLeft + 15, currentY, pageWidth - 15);
-                currentY += answerHeight + 2;
-            });
+        // تذييل الصفحة
+        doc.setFontSize(10);
+        doc.setTextColor(100, 100, 100);
+        doc.setFont("helvetica", "italic");
+        doc.text(`Corrigé complet - ${examInfo.totalQuestions} questions - Page ${pageNumber}`, 
+                 105, 285, null, null, 'center');
+        
+        // === MOBILE-COMPATIBLE DOWNLOAD ===
+        const fileName = `corrige-complet-${examInfo.title.replace(/[^a-z0-9]/gi, '-').toLowerCase()}.pdf`;
+        
+        // Detect if user is on mobile
+        const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+        const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
+        
+        if (isMobile) {
+            // Method for mobile devices
+            downloadForMobile(doc, fileName, isIOS);
         } else {
-            doc.setFont("helvetica", "italic");
-            doc.setTextColor(100, 100, 100);
-            doc.text("Pas de réponse correcte définie", marginLeft + 15, currentY);
-            doc.setTextColor(0, 0, 0);
-            currentY += lineHeight;
+            // Method for desktop (original)
+            doc.save(fileName);
         }
         
-        // إضافة خط فاصل
-        currentY += 3;
-        doc.setDrawColor(200, 200, 200);
-        doc.setLineWidth(0.3);
-        doc.line(marginLeft, currentY, marginLeft + pageWidth, currentY);
+        // Show success message
+        setTimeout(() => {
+            alert('PDF généré avec succès!');
+        }, 500);
         
-        return currentY + questionMargin - yPosition; // إرجاع الارتفاع المستخدم
+    } catch (error) {
+        console.error('Erreur lors de la génération du PDF:', error);
+        alert('Erreur lors de la génération du PDF. Veuillez réessayer.');
+    } finally {
+        // Restore button state
+        if (downloadBtn) {
+            downloadBtn.innerHTML = originalText;
+            downloadBtn.disabled = false;
+        }
+    }
+}
+
+// === NEW FUNCTION FOR MOBILE DOWNLOAD ===
+function downloadForMobile(doc, fileName, isIOS) {
+    // Convert PDF to blob
+    const pdfBlob = doc.output('blob');
+    const blobUrl = URL.createObjectURL(pdfBlob);
+    
+    // Create temporary download link
+    const link = document.createElement('a');
+    link.href = blobUrl;
+    link.download = fileName;
+    link.style.display = 'none';
+    
+    // Add to document
+    document.body.appendChild(link);
+    
+    if (isIOS) {
+        // iOS needs special handling
+        handleIOSDownload(blobUrl, fileName);
+    } else {
+        // Android and other mobile browsers
+        link.click();
     }
     
-    // معالجة كل سؤال
-    currentExam.questions.forEach((question, index) => {
-        // التحقق من المساحة قبل إضافة السؤال
-        const estimatedHeight = 50; // تقدير تقريبي للارتفاع
-        if (yPosition + estimatedHeight > 280) {
-            doc.addPage();
-            yPosition = 20;
-            pageNumber++;
-            
-            // ترويسة الصفحة الجديدة
-            doc.setFontSize(12);
-            doc.setFont("helvetica", "bold");
-            doc.text(`Corrigé - Page ${pageNumber}`, 105, 30, null, null, 'center');
-            doc.setDrawColor(0, 0, 0);
-            doc.setLineWidth(0.5);
-            doc.line(marginLeft, 35, marginLeft + pageWidth, 35);
-            yPosition = 40;
+    // Clean up after a delay
+    setTimeout(() => {
+        if (link.parentNode) {
+            document.body.removeChild(link);
         }
-        
-        // إضافة السؤال مع تقسيم النص
-        const questionHeight = addQuestionWithWrapping(question, index);
-        yPosition += questionHeight;
-    });
+        URL.revokeObjectURL(blobUrl);
+    }, 1000);
+}
+
+// === iOS SPECIFIC HANDLING ===
+function handleIOSDownload(blobUrl, fileName) {
+    // For iOS, we need to open in new tab and guide user
+    const newTab = window.open(blobUrl, '_blank');
     
-    // تذييل الصفحة
-    doc.setFontSize(10);
-    doc.setTextColor(100, 100, 100);
-    doc.setFont("helvetica", "italic");
-    doc.text(`Corrigé complet - ${examInfo.totalQuestions} questions - Page ${pageNumber}`, 
-             105, 285, null, null, 'center');
+    // Show iOS instructions
+    setTimeout(() => {
+        if (newTab && !newTab.closed) {
+            // Tab opened successfully
+            showIOSInstructions();
+        } else {
+            // Tab blocked or failed, try alternative
+            const link = document.createElement('a');
+            link.href = blobUrl;
+            link.target = '_blank';
+            link.click();
+            showIOSInstructions();
+        }
+    }, 500);
+}
+
+// === SHOW iOS INSTRUCTIONS ===
+function showIOSInstructions() {
+    // Create or show instruction modal
+    let instructions = document.getElementById('ios-download-help');
     
-    // حفظ الملف
+    if (!instructions) {
+        instructions = document.createElement('div');
+        instructions.id = 'ios-download-help';
+        instructions.innerHTML = `
+            <div style="
+                position: fixed;
+                top: 0; left: 0;
+                width: 100%; height: 100%;
+                background: rgba(0,0,0,0.7);
+                z-index: 9999;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                padding: 20px;
+            ">
+                <div style="
+                    background: white;
+                    padding: 25px;
+                    border-radius: 15px;
+                    max-width: 400px;
+                    text-align: center;
+                    box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+                ">
+                    <h3 style="margin-top: 0; color: #333;">📱 Téléchargement sur iOS</h3>
+                    <p style="color: #555; line-height: 1.5;">
+                        Sur iPhone/iPad, suivez ces étapes :
+                    </p>
+                    <ol style="text-align: left; color: #555;">
+                        <li>Appuyez sur l'icône de partage <span style="font-size: 20px">⎋</span> en bas</li>
+                        <li>Faites défiler vers le bas</li>
+                        <li>Sélectionnez "Enregistrer dans Fichiers"</li>
+                        <li>Choisissez un dossier et appuyez sur "Enregistrer"</li>
+                    </ol>
+                    <button onclick="this.parentElement.parentElement.remove()" 
+                            style="
+                                margin-top: 20px;
+                                padding: 12px 25px;
+                                background: #007AFF;
+                                color: white;
+                                border: none;
+                                border-radius: 8px;
+                                font-size: 16px;
+                                cursor: pointer;
+                            ">
+                        J'ai compris
+                    </button>
+                </div>
+            </div>
+        `;
+        document.body.appendChild(instructions);
+    } else {
+        instructions.style.display = 'flex';
+    }
+}
+
+// === ALTERNATIVE: SIMPLER MOBILE FIX ===
+// If you want a simpler version, use this alternative download function:
+function mobileDownloadPDF() {
+    // ... [your PDF generation code] ...
+    
+    // After generating PDF:
     const fileName = `corrige-complet-${examInfo.title.replace(/[^a-z0-9]/gi, '-').toLowerCase()}.pdf`;
-    doc.save(fileName);
+    
+    // Mobile-compatible download
+    const pdfOutput = doc.output('datauristring');
+    const link = document.createElement('a');
+    link.href = pdfOutput;
+    link.download = fileName;
+    
+    // For iOS, we need to add to document first
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
 }
 
 // =============================================
@@ -3031,4 +3086,5 @@ window.showTermSelection = showTermSelection;
 window.showExamList = showExamList;
 window.previousQuestion = previousQuestion;
 window.nextQuestion = nextQuestion;
+
 window.downloadPDF = downloadPDF;
