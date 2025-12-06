@@ -317,9 +317,47 @@
             </div>
 
             <div class="results-actions">
-                <button class="btn btn-success" onclick="downloadPDF()">
-                    <i class="fas fa-file-pdf"></i> Télécharger les réponses correctes (PDF)
-                </button>
+<!-- Update your button to support touch events -->
+<button onclick="downloadPDF()" 
+        ontouchend="downloadPDF()"
+        id="pdfDownloadBtn"
+        style="
+            padding: 15px 30px;
+            background: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            cursor: pointer;
+            min-height: 44px; /* Minimum touch target for mobile */
+            min-width: 150px;
+        ">
+    📥 Télécharger le Corrigé PDF
+</button>
+
+<!-- Optional: Add loading spinner CSS -->
+<style>
+    .loading {
+        position: relative;
+        color: transparent !important;
+    }
+    .loading::after {
+        content: '';
+        position: absolute;
+        width: 20px;
+        height: 20px;
+        top: 50%;
+        left: 50%;
+        margin: -10px 0 0 -10px;
+        border: 2px solid #fff;
+        border-radius: 50%;
+        border-top-color: transparent;
+        animation: spin 1s linear infinite;
+    }
+    @keyframes spin {
+        to { transform: rotate(360deg); }
+    }
+</style>
                 <button class="btn btn-outline" onclick="showPage('exam-list-page')">
                     <i class="fas fa-redo"></i> Passer un autre examen
                 </button>
@@ -329,3 +367,4 @@
 </body>
 
 </html>
+
