@@ -1,0 +1,330 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>4ème Année Pharmacie - Plateforme d'Examens</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="style.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.28/jspdf.plugin.autotable.min.js"></script>
+    <script src="script.js" defer></script>
+</head>
+<body>
+    <!-- Home Page -->
+    <div id="home-page">
+        <header>
+            <div class="logo">4ème Année Pharmacie</div>
+            <nav>
+                <ul>
+                    <li><a href="#" onclick="showPage('home-page')">Accueil</a></li>
+                    <li><a href="https://volk-k0v.github.io/calculate_degree_4th/" target="_blank" rel="noopener">Calculateur</a></li>
+                    <li><a href="#">À propos</a></li>
+                    <li><a href="#">Contact</a></li>
+                </ul>
+            </nav>
+        </header>
+
+        <section class="hero">
+            <h1>Plateforme de QCM pour étudiants en pharmacie</h1>
+            <p>Testez vos connaissances en hémobiologie, immunologie, microbiologie, parasitologie et biochimie clinique</p>
+        </section>
+
+        <section id="subjects-section" class="subjects">
+            <h2 class="section-title">Domaines d'étude</h2>
+            <div class="cards-container">
+                <div class="card" onclick="showExamTypeSelection('hemobiologie')">
+                    <div class="card-icon">
+                        <i class="fas fa-tint"></i>
+                    </div>
+                    <div class="card-content">
+                        <h3 class="card-title">Hémobiologie</h3>
+                        <p class="card-desc">5 examens disponibles</p>
+                    </div>
+                </div>
+                <div class="card" onclick="showExamTypeSelection('immunologie')">
+                    <div class="card-icon">
+                        <i class="fas fa-shield-virus"></i>
+                    </div>
+                    <div class="card-content">
+                        <h3 class="card-title">Immunologie</h3>
+                        <p class="card-desc">4 examens disponibles</p>
+                    </div>
+                </div>
+                <div class="card" onclick="showExamTypeSelection('microbiologie')">
+                    <div class="card-icon">
+                        <i class="fas fa-microscope"></i>
+                    </div>
+                    <div class="card-content">
+                        <h3 class="card-title">Microbiologie</h3>
+                        <p class="card-desc">6 examens disponibles</p>
+                    </div>
+                </div>
+                <div class="card" onclick="showExamTypeSelection('parasitologie')">
+                    <div class="card-icon">
+                        <i class="fas fa-bug"></i>
+                    </div>
+                    <div class="card-content">
+                        <h3 class="card-title">Parasitologie</h3>
+                        <p class="card-desc">3 examens disponibles</p>
+                    </div>
+                </div>
+                <div class="card" onclick="showExamTypeSelection('biochimie-clinique')">
+                    <div class="card-icon">
+                        <i class="fas fa-flask"></i>
+                    </div>
+                    <div class="card-content">
+                        <h3 class="card-title">Biochimie Clinique</h3>
+                        <p class="card-desc">7 examens disponibles</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <footer>
+            <div class="footer-content">
+                <div class="footer-section">
+                    <h3>4ème Année Pharmacie</h3>
+                    <p>Plateforme d'entraînement aux examens pour les étudiants en pharmacie de 4ème année.</p>
+                    <a href="https://volk-k0v.github.io/calculate_degree_4th/" target="_blank" rel="noopener">
+                        <i class="fas fa-calculator"></i> Calculateur de Notes
+                    </a>
+                </div>
+                <div class="footer-section">
+                    <h3>Liens rapides</h3>
+                    <a href="#" onclick="showPage('home-page')">Accueil</a>
+                    <a href="https://volk-k0v.github.io/calculate_degree_4th/" target="_blank" rel="noopener">Calculateur</a>
+                    <a href="#">À propos</a>
+                    <a href="#">Contact</a>
+                </div>
+                <div class="footer-section">
+                    <h3>Contact</h3>
+                    <p>Email: contact@pharma-exams.fr</p>
+                    <p>Téléphone: +33 1 23 45 67 89</p>
+                    <p>Adresse: 123 Rue de la Pharmacie, Paris</p>
+                </div>
+            </div>
+            <div class="copyright">
+                &copy; 2025 Plateforme d'Examens de Pharmacie. Tous droits réservés.
+            </div>
+        </footer>
+    </div>
+
+    <!-- Exam Type Selection Page -->
+    <div id="exam-type-page" class="hidden">
+        <header>
+            <div class="logo">4ème Année Pharmacie</div>
+            <nav>
+                <ul>
+                    <li><a href="#" onclick="showPage('home-page')">Accueil</a></li>
+                    <li><a href="https://volk-k0v.github.io/calculate_degree_4th/" target="_blank" rel="noopener">Calculateur</a></li>
+                    <li><a href="#">À propos</a></li>
+                    <li><a href="#">Contact</a></li>
+                </ul>
+            </nav>
+        </header>
+
+        <div class="exam-type-selection">
+            <a href="#" class="back-btn" onclick="showPage('home-page')">
+                <i class="fas fa-arrow-left"></i> Retour aux matières
+            </a>
+            <h1 class="exam-type-title" id="exam-type-subject-title">Immunologie</h1>
+            <p>Choisissez le type d'examen</p>
+            
+            <div class="exam-type-buttons">
+                <div class="exam-type-btn" onclick="showTermSelection('academic')">
+                    <div class="exam-type-icon">
+                        <i class="fas fa-graduation-cap"></i>
+                    </div>
+                    <h3>Examens Académiques</h3>
+                    <p>Examens organisés par trimestre</p>
+                </div>
+                
+                <div class="exam-type-btn" onclick="showExamList('random')">
+                    <div class="exam-type-icon">
+                        <i class="fas fa-random"></i>
+                    </div>
+                    <h3>Examens Aléatoires</h3>
+                    <p>Questions mélangées de différents cours</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Term Selection Page -->
+    <div id="term-selection-page" class="hidden">
+        <header>
+            <div class="logo">4ème Année Pharmacie</div>
+            <nav>
+                <ul>
+                    <li><a href="#" onclick="showPage('home-page')">Accueil</a></li>
+                    <li><a href="https://volk-k0v.github.io/calculate_degree_4th/" target="_blank" rel="noopener">Calculateur</a></li>
+                    <li><a href="#">À propos</a></li>
+                    <li><a href="#">Contact</a></li>
+                </ul>
+            </nav>
+        </header>
+
+        <div class="term-selection">
+            <a href="#" class="back-btn" onclick="showPage('exam-type-page')">
+                <i class="fas fa-arrow-left"></i> Retour au type d'examen
+            </a>
+            <h1 class="term-title" id="term-subject-title">Immunologie - Examens Académiques</h1>
+            <p>Choisissez le trimestre</p>
+            
+            <div class="term-buttons">
+                <div class="term-btn" onclick="showExamList('academic', 'T1')">
+                    <div class="term-icon">
+                        <i class="fas fa-calendar-alt"></i>
+                    </div>
+                    <h3>Trimestre 1</h3>
+                    <p>Examens du premier trimestre</p>
+                </div>
+                
+                <div class="term-btn" onclick="showExamList('academic', 'T2')">
+                    <div class="term-icon">
+                        <i class="fas fa-calendar-alt"></i>
+                    </div>
+                    <h3>Trimestre 2</h3>
+                    <p>Examens du deuxième trimestre</p>
+                </div>
+                
+                <div class="term-btn" onclick="showExamList('academic', 'T3')">
+                    <div class="term-icon">
+                        <i class="fas fa-calendar-alt"></i>
+                    </div>
+                    <h3>Trimestre 3</h3>
+                    <p>Examens du troisième trimestre</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Exam List Page -->
+    <div id="exam-list-page" class="hidden">
+        <header>
+            <div class="logo">4ème Année Pharmacie</div>
+            <nav>
+                <ul>
+                    <li><a href="#" onclick="showPage('home-page')">Accueil</a></li>
+                    <li><a href="https://volk-k0v.github.io/calculate_degree_4th/" target="_blank" rel="noopener">Calculateur</a></li>
+                    <li><a href="#">À propos</a></li>
+                    <li><a href="#">Contact</a></li>
+                </ul>
+            </nav>
+        </header>
+
+        <div class="exam-list-page">
+            <a href="#" class="back-btn" id="exam-list-back-btn">
+                <i class="fas fa-arrow-left"></i> Retour
+            </a>
+            <h1 class="exam-list-title" id="exam-list-title">Examens d'Immunologie - T1</h1>
+            
+            <div class="exam-list" id="exam-list-container">
+                <!-- Exams will be loaded here -->
+            </div>
+        </div>
+    </div>
+
+    <!-- Exam Page -->
+    <div id="exam-page" class="hidden">
+        <header>
+            <div class="logo">4ème Année Pharmacie</div>
+            <nav>
+                <ul>
+                    <li><a href="#" onclick="showPage('home-page')">Accueil</a></li>
+                    <li><a href="#" onclick="showPage('exam-list-page')">Retour aux examens</a></li>
+                    <li><a href="https://volk-k0v.github.io/calculate_degree_4th/" target="_blank" rel="noopener">Calculateur</a></li>
+                </ul>
+            </nav>
+        </header>
+
+        <div class="exam-container">
+            <div class="exam-header">
+                <h1 class="exam-title" id="exam-title">Introduction à la microbiologie, Monde microbien et Classification</h1>
+                <div class="exam-progress">
+                    <span id="current-question">1</span>
+                    <div class="progress-bar">
+                        <div class="progress-fill" id="progress-fill"></div>
+                    </div>
+                    <span id="total-questions">13</span>
+                </div>
+            </div>
+
+            <div class="question-container">
+                <div class="question-number">Question <span id="question-number">1</span>/13</div>
+                <div class="question-text" id="question-text">Les écritures correctes sont:</div>
+
+                <div id="context" class="context-box"></div>
+                
+                <div class="options-container" id="options-container">
+                    <!-- Options will be inserted here by JavaScript -->
+                </div>
+            </div>
+
+            <div class="exam-actions">
+                <button class="btn btn-outline" id="prev-btn" onclick="previousQuestion()">
+                    <i class="fas fa-arrow-left"></i> Question précédente
+                </button>
+                <button class="btn" id="next-btn" onclick="nextQuestion()">
+                    Question suivante <i class="fas fa-arrow-right"></i>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Results Page -->
+    <div id="results-page" class="hidden">
+        <header>
+            <div class="logo">4ème Année Pharmacie</div>
+            <nav>
+                <ul>
+                    <li><a href="#" onclick="showPage('home-page')">Accueil</a></li>
+                    <li><a href="#" onclick="showPage('exam-list-page')">Retour aux examens</a></li>
+                    <li><a href="https://volk-k0v.github.io/calculate_degree_4th/" target="_blank" rel="noopener">Calculateur</a></li>
+                </ul>
+            </nav>
+        </header>
+
+        <div class="results-container">
+            <div class="results-header">
+                <h1 class="results-title">Résultats de l'examen</h1>
+                <div class="score-display" id="final-score">0/13</div>
+                <p class="score-text" id="score-text">Votre score</p>
+            </div>
+
+            <div class="results-details">
+                <div class="detail-item">
+                    <span class="detail-label">Examen:</span>
+                    <span class="detail-value" id="results-exam-title">Introduction à la microbiologie, Monde microbien et Classification</span>
+                </div>
+                <div class="detail-item">
+                    <span class="detail-label">Questions correctes:</span>
+                    <span class="detail-value correct-answer" id="correct-answers">0</span>
+                </div>
+                <div class="detail-item">
+                    <span class="detail-label">Questions incorrectes:</span>
+                    <span class="detail-value incorrect-answer" id="incorrect-answers">0</span>
+                </div>
+                <div class="detail-item">
+                    <span class="detail-label">Pourcentage:</span>
+                    <span class="detail-value" id="percentage">0%</span>
+                </div>
+                <div class="detail-item">
+                    <span class="detail-label">Temps passé:</span>
+                    <span class="detail-value" id="time-spent">0 min</span>
+                </div>
+            </div>
+
+            <div class="results-actions">
+                <button class="btn btn-success" onclick="downloadPDF()">
+                    <i class="fas fa-file-pdf"></i> Télécharger les réponses correctes (PDF)
+                </button>
+                <button class="btn btn-outline" onclick="showPage('exam-list-page')">
+                    <i class="fas fa-redo"></i> Passer un autre examen
+                </button>
+            </div>
+        </div>
+    </div>
+</body>
+</html>
