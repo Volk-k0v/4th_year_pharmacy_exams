@@ -1,3 +1,4 @@
+
 // =============================================
 // BASE DE DONNÉES COMPLÈTE DES EXAMENS
 // =============================================
@@ -3317,6 +3318,131 @@ function downloadPDFMobileOptimized() {
         alert('Impossible de télécharger le PDF. Essayez avec un navigateur différent (Chrome, Safari).');
     }
 }
+
+// =============================================
+// FONCTIONS DE REVUE DES RÉPONSES
+// =============================================
+
+function showAnswersReview() {
+    // حساب الإحصائيات
+    const correctCount = examInfo.correctCount;
+    const incorrectCount = examInfo.totalQuestions - correctCount;
+    
+    // تحديث الإحصائيات
+    document.getElementById('review-correct-count').textContent = correctCount;
+    document.getElementById('review-incorrect-count').textContent = incorrectCount;
+    
+    // عرض جميع الأسئلة
+    renderQuestionsReview('all');
+    
+    // إظهار الصفحة
+    showPage('answers-review-page');
+}
+
+function renderQuestionsReview(filter = 'all') {
+    const container = document.getElementById('questions-review-container');
+    if (!container || !examResults) return;
+    
+    container.innerHTML = '';
+    
+    examResults.forEach((result, index) => {
+        // تطبيق التصفية
+        if (filter === 'correct' && !result.isCorrect) return;
+        if (filter === 'incorrect' && result.isCorrect) return;
+        
+        const questionDiv = document.createElement('div');
+        questionDiv.className = `review-question ${result.isCorrect ? 'correct' : 'incorrect'}`;
+        
+        // إنشاء خيارات السؤال
+        let optionsHtml = '';
+        if (result.options && result.options.length > 0) {
+            result.options.forEach((option, optIndex) => {
+                const isCorrect = currentExam.questions[index].correct.includes(optIndex);
+                const isUserSelected = result.userAnswer.includes(result.options[optIndex]);
+                
+                let optionClass = 'review-option';
+                if (isCorrect) optionClass += ' correct-answer';
+                if (isUserSelected) {
+                    optionClass += ' user-answer';
+                    optionClass += result.isCorrect ? ' correct' : ' incorrect';
+                }
+                
+                const optionLetter = String.fromCharCode(65 + optIndex);
+                
+                optionsHtml += `
+                    <div class="${optionClass}">
+                        <span class="option-indicator">${optionLetter}</span>
+                        <span class="option-text">${option}</span>
+                    </div>
+                `;
+            });
+        }
+        
+        // نص التفسير
+        const userAnswers = result.userAnswer.length > 0 ? 
+            result.userAnswer.join(', ') : 'Aucune réponse';
+        const correctAnswers = result.correctAnswer.join(', ');
+        
+        questionDiv.innerHTML = `
+            <div class="question-header">
+                <span class="question-number">Question ${index + 1}</span>
+                <span class="question-status ${result.isCorrect ? 'status-correct' : 'status-incorrect'}">
+                    ${result.isCorrect ? '✓ Correcte' : '✗ Incorrecte'}
+                </span>
+            </div>
+            
+            <div class="question-text">${result.question}</div>
+            
+            <div class="review-options">
+                ${optionsHtml}
+            </div>
+            
+            <div class="explanation">
+                <strong>Votre réponse:</strong> ${userAnswers}
+                <br>
+                <strong>Réponse correcte:</strong> ${correctAnswers}
+            </div>
+        `;
+        
+        container.appendChild(questionDiv);
+    });
+    
+    // إذا لم توجد أسئلة بعد التصفية
+    if (container.innerHTML === '') {
+        container.innerHTML = `
+            <div class="no-questions-message">
+                <i class="fas fa-info-circle"></i>
+                Aucune question ne correspond au filtre sélectionné.
+            </div>
+        `;
+    }
+}
+
+function filterReview(type) {
+    // تحديث أزرار التصفية
+    document.querySelectorAll('.filter-btn').forEach(btn => {
+        btn.classList.remove('active');
+    });
+    
+    // تفعيل الزر المحدد
+    const activeBtn = Array.from(document.querySelectorAll('.filter-btn')).find(btn => {
+        const text = btn.textContent.toLowerCase();
+        return (type === 'all' && text === 'toutes') ||
+               (type === 'correct' && text === 'correctes') ||
+               (type === 'incorrect' && text.includes('incorrectes'));
+    });
+    
+    if (activeBtn) {
+        activeBtn.classList.add('active');
+    }
+    
+    // إعادة عرض الأسئلة مع التصفية
+    renderQuestionsReview(type);
+}
+
+// أضف هذه الدوال إلى الكائن window حتى تكون متاحة في HTML
+window.showAnswersReview = showAnswersReview;
+window.filterReview = filterReview;  
 
 // =============================================
 // INITIALISATION
