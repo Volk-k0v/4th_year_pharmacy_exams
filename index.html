@@ -334,7 +334,10 @@
         ">
     📥 Télécharger le Corrigé PDF
 </button>
-
+    <!-- زر مراجعة الإجابات الجديد -->
+    <button class="btn btn-review" onclick="showAnswersReview()">
+        <i class="fas fa-list-check"></i> Voir les réponses
+    </button>
 <!-- Optional: Add loading spinner CSS -->
 <style>
     .loading {
@@ -364,7 +367,41 @@
             </div>
         </div>
     </div>
+    <!-- صفحة مراجعة الإجابات -->
+<div id="answers-review-page" class="hidden">
+    <header>
+        <div class="logo">4ème Année Pharmacie</div>
+        <nav>
+            <ul>
+                <li><a href="#" onclick="showPage('results-page')">Retour aux résultats</a></li>
+                <li><a href="#" onclick="showPage('exam-list-page')">Nouvel examen</a></li>
+            </ul>
+        </nav>
+    </header>
+
+    <div class="review-container">
+        <div class="review-header">
+            <h1><i class="fas fa-list-check"></i> Revue des réponses</h1>
+            <div class="review-stats">
+                <span class="stat-correct">✓ <span id="review-correct-count">0</span> correctes</span>
+                <span class="stat-incorrect">✗ <span id="review-incorrect-count">0</span> incorrectes</span>
+                <button class="btn-close" onclick="showPage('results-page')">
+                    <i class="fas fa-times"></i> Fermer
+                </button>
+            </div>
+        </div>
+
+        <div class="review-filters">
+            <button class="filter-btn active" onclick="filterReview('all')">Toutes</button>
+            <button class="filter-btn" onclick="filterReview('correct')">Correctes</button>
+            <button class="filter-btn" onclick="filterReview('incorrect')">Incorrectes</button>
+        </div>
+
+        <div class="questions-review" id="questions-review-container">
+            <!-- الأسئلة ستظهر هنا -->
+        </div>
+    </div>
+</div>
 </body>
 
 </html>
-
